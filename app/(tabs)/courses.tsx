@@ -65,7 +65,7 @@ export default function CoursesScreen() {
   const formatDate = () => {
     const date = new Date();
     const options = { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' };
-    return date.toLocaleDateString('en-US', options);
+    return date.toLocaleDateString('en-US');
   };
 
   const CourseCard = ({ course }: { course: Course }) => (

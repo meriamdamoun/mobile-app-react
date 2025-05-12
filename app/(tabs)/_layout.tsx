@@ -1,16 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Ionicons, MaterialIcons, Feather, FontAwesome } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 
 import HomeScreen from './index';
 import CoursesScreen from './courses';
 import ExamsScreen from './exams';
 import ProfileScreen from './profil';
 
+import Modal from '../../components/Modal';
+import TaskForm from './TaskForm';
+
+// Define types for the AddButton props
+interface AddButtonProps {
+  onPress: () => void;  // The onPress prop is a function that takes no arguments and returns void
+}
+
 const Tab = createBottomTabNavigator();
 
-const AddButton = ({ onPress }) => {
+const AddButton: React.FC<AddButtonProps> = ({ onPress }) => {
   return (
     <View style={styles.addButtonContainer}>
       <TouchableOpacity
@@ -24,56 +32,80 @@ const AddButton = ({ onPress }) => {
 };
 
 const BottomNav = () => {
+  const [modalVisible, setModalVisible] = useState(false);
+  const [tasks, setTasks] = useState<any[]>([]); // It's okay to use 'any' here if you don't have a type for tasks yet
+
   const handleAddTask = () => {
-    // Fonction pour ajouter une tâche
-    console.log('Ajouter une tâche');
-    // Vous pouvez naviguer vers un écran d'ajout de tâches
-    // navigation.navigate('AddTask');
+    setModalVisible(true);
+  };
+
+  const handleSaveTask = (newTask: any) => {
+    setTasks([...tasks, newTask]);
+    console.log('New task added:', newTask);
+    setModalVisible(false);
+    // Here you would typically save the task to your state management or database
+  };
+
+  const handleCancelTask = () => {
+    setModalVisible(false);
   };
 
   return (
-    <Tab.Navigator
-      screenOptions={({ route }) => ({
-        headerShown: false,
-        tabBarShowLabel: false,
-        tabBarActiveTintColor: '#007aff',
-        tabBarStyle: {
-          height: 60,
-          backgroundColor: 'white',
-          borderTopWidth: 0,
-          elevation: 0,
-          position: 'absolute',
-        },
-        tabBarIcon: ({ color, size }) => {
-          switch (route.name) {
-            case 'Home':
-              return <Ionicons name="home" size={24} color={color} />;
-            case 'Calendar':
-              return <Ionicons name="book" size={24} color={color} />;
-            case 'Dashboard':
-              return <Ionicons name="grid-outline" size={24} color={color} />;
-            case 'Profile':
-              return <Ionicons name="person-outline" size={24} color={color} />;
-            default:
-              return null;
-          }
-        },
-      })}
-    >
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Calendar" component={CoursesScreen} />
-      <Tab.Screen
-        name="Add"
-        component={HomeScreen} // Utilisez HomeScreen comme écran par défaut ou créez un écran vide
-        options={{
-          tabBarButton: () => (
-            <AddButton onPress={handleAddTask} />
-          ),
-        }}
-      />
-      <Tab.Screen name="Dashboard" component={ExamsScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
-    </Tab.Navigator>
+    <>
+      <Tab.Navigator
+        screenOptions={({ route }) => ({
+          headerShown: false,
+          tabBarShowLabel: false,
+          tabBarActiveTintColor: '#007aff',
+          tabBarStyle: {
+            height: 60,
+            backgroundColor: 'white',
+            borderTopWidth: 0,
+            elevation: 0,
+            position: 'absolute',
+          },
+          tabBarIcon: ({ color, size }) => {
+            switch (route.name) {
+              case 'Home':
+                return <Ionicons name="home" size={24} color={color} />;
+              case 'Calendar':
+                return <Ionicons name="book" size={24} color={color} />;
+              case 'Dashboard':
+                return <Ionicons name="grid-outline" size={24} color={color} />;
+              case 'Profile':
+                return <Ionicons name="person-outline" size={24} color={color} />;
+              default:
+                return null;
+            }
+          },
+        })}
+      >
+        <Tab.Screen name="Home" component={HomeScreen} />
+        <Tab.Screen name="Calendar" component={CoursesScreen} />
+        <Tab.Screen
+          name="Add"
+          component={HomeScreen}
+          options={{
+            tabBarButton: () => (
+              <AddButton onPress={handleAddTask} />
+            ),
+          }}
+        />
+        <Tab.Screen name="Dashboard" component={ExamsScreen} />
+        <Tab.Screen name="Profile" component={ProfileScreen} />
+      </Tab.Navigator>
+
+      <Modal 
+        visible={modalVisible}
+        onClose={handleCancelTask}
+        title="Add New Task"
+      >
+        <TaskForm 
+          onSave={handleSaveTask}
+          onCancel={handleCancelTask}
+        />
+      </Modal>
+    </>
   );
 };
 
@@ -93,7 +125,6 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
-    // Effet d'ombre subtil comme dans l'image
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
